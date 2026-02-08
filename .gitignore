@@ -8,7 +8,6 @@ venv/
 
 # Database
 
-*.db
 
 # OS
 .DS_Store
