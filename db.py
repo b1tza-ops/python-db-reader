@@ -171,3 +171,52 @@ def calculate_order_total(order_id: int) -> float:
     with get_connection() as conn:
         row = conn.execute(query, (order_id,)).fetchone()
         return row['total'] if row and row['total'] is not None else 0.0
+    
+
+def get_customers(limit: int = 20):
+    query = """
+        SLERCET
+            customer_id,
+            customer_unique_id,
+            customer_city
+            customer_state
+        FROM olist_customers
+        LIMIT?"""
+    
+    with get_connection() as conn:
+        rows = conn.execute(query, (limit,)).fetchall()
+        return [dict(r) for r in rows]
+    
+def get_customers_orders(customer_id: str, limit: int =20):
+    query ="""
+        SELECT
+            order_id,
+            order_status,
+            order_purchase_timestamp
+        FROM olist_orders
+        WHERE customer_id = ?
+        ORDER BY order_purchase_timestamp DESC
+        LIMIT ?
+    """
+
+    with get_connection() as conn:
+        rows = conn.execute(query, (customer_id, limit)).fetchall()
+        return [dict(r) for r in rows]
+    
+def get_order_items(order_id: str):
+    query = """
+        SELECT
+            oi.product_id,
+            oi.price,
+            oi.freight_value,
+            
+            p.product_category_name,
+            p.product_photos_qty
+        
+        FROM olist_order_items oi
+        JOIN olist_products p ON p.product_id = oi.product_id
+        WHERE oi.order_id = ?
+    """
+    with get_connection() as conn:
+        rows = conn.execute(query, (order_id,)).fetchall()
+        return [dict(r) for r in rows]  
