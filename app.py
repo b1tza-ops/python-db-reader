@@ -46,15 +46,49 @@ def print_shopper_details(s):
     print(f"Date joined:   {s['date_joined']}\n")
 
 
+def print_order_history(orders, items_by_order, total_by_order):
+    if not orders:
+        print("\nNo orders found for this shopper.\n")
+        return
+    
+    print("")
+    for o in orders:
+        oid = o['order_id']
+        print(f"Order #{oid} | Date: {o['order_date']} | Status: {o['order_status']})")
+        items = items_by_order.get(oid, [])
+        if not items:
+            print("  (No items found)\n")
+            continue
+
+        for it in items:
+            name = it["product_description"]
+            maker = it["product_manufacturer"] or ""
+            model = it["product_model"] or ""
+            seller = it["seller_name"] or "Unknown seller"
+            qty = it["quantity"]
+            price = it["price"]
+            line_total = qty * price
+
+            extra = " ".join(x for x in [maker, model] if x).strip()
+            if extra:
+                extra = f" ({extra})"
+            
+            print(f' -{name}{extra}')
+            print(f'   Seller: {seller} | Qty {qty} | Unit £{price:.2f} |  Line: £{line_total:.2f}')
+
+    print (f" Order total : £{total_by_order.get(oid, 0):.2f}\n")     
+
 def menu():
     while True:
         print("=== Parana DB Reader ===")
         print("1) List shoppers")
         print("2) Search shoppers (name/email)")
         print("3) View shopper by ID")
-        print("4) Exit")
+        print("4) Show DB schema (tables/columns)")
+        print("5) Show shopper order histoy")
+        print("6) Exit")
 
-        choice = input("Choose an option (1-4): ").strip()
+        choice = input("Choose an option (1-6): ").strip()
 
         if choice == "1":
             limit = prompt_int("How many shoppers? (default 10): ", default=10)
@@ -78,8 +112,41 @@ def menu():
                 print(f"\nNo shopper found with ID {sid}.\n")
                 continue
             print_shopper_details(shopper)
-
+        
         elif choice == "4":
+            from db import list_tables, describe_table
+            tables = list_tables()
+            print("\nDatabase tables:")
+            for t in tables:
+                print(f"- {t}")
+
+            print("\nTable schemas:")
+            for t in tables:
+                print(f"== {t} ==")
+                cols = describe_table(t)
+                for c in cols:
+                    print(f"  - {c['name']} ({c['type']})")
+                print("")
+        
+        elif choice == "5":
+            from db import get_shopper_orders, get_order_items, calculate_order_total
+
+            sid = prompt_int("Enter shopper ID: ")
+            limit = prompt_int("How many orders to show? (default 10): ", default=10)
+
+            orders = get_shopper_orders(shopper_id=sid, limit=limit)
+
+            items_by_order = {}
+            total_by_order = {}
+
+            for o in orders:
+                oid = o["order_id"]
+                items_by_order[oid] = get_order_items(oid)
+                total_by_order[oid] = calculate_order_total(oid)
+
+            print_order_history(orders, items_by_order, total_by_order)
+
+        elif choice == "6":
             print("\nThank you!\n")
             break
 
