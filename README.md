@@ -34,6 +34,7 @@ git clone https://github.com/YOUR_USERNAME/python-db-reader.git
 cd python-db-reader
 python3 app.py
 
+---
 
 ## 🛣️ Project Roadmap
 
