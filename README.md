@@ -26,6 +26,7 @@ The database schema represents a realistic e-commerce system (shoppers, products
 
 ---
 
+---
 ## ▶️ How to Run
 
 Clone the repository:
