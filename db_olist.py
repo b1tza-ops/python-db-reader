@@ -75,7 +75,7 @@ def search_customers(city: str = "", state: str ="", limit: int = 50):
     with get_connection() as conn:
         rows = conn.execute(query, (city, city, state, state, limit)).fetchall()
         return [dict(r) for r in rows]
-    
+
 def get_orders_by_customer_unique_id(unique_id: str, limit: int = 20):
     query = """
         SELECT
